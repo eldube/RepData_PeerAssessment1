@@ -1,5 +1,6 @@
 # Reproducible Research: Peer Assessment 1
 
+
 ## Introduction 
 The assignment makes use of data collected from a personnal activity monitoring device which collects data at 5-minute interval throughout the day and records the number of steps taken in each interval. The data provided is from an anonymous individual and covers a 2 month period from October 2012 to November 2012.
 
