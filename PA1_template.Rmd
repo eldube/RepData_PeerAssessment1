@@ -1,12 +1,19 @@
 # Reproducible Research: Peer Assessment 1 
+
 *submitted: June 2014*
 
+
 ## Data 
-The assignment makes use of data collected from a personnal activity monitoring device which collects data at 5-minute interval throughout the day and records the number of steps taken in each interval. The data provided is from an anonymous individual and covers a 2 month period from October 2012 to November 2012.
+The assignment makes use of data collected from a personal activity monitoring device which 
+collects data at 5-minute intervals throughout the day and records the number of steps 
+taken in each interval. The data provided is from an anonymous individual and covers a two(2)
+month period from October 2012 to November 2012.
 
 ## Loading and preprocessing the data
 
-The zip file containing the data required for the assignment can be dowloaded from the provided Url : https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip  using the following code:
+The zip file containing the data required for the assignment can be dowloaded from the provided 
+Url : https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip  using the following 
+R code:
 
 
 ```{r cache=TRUE}
@@ -23,16 +30,20 @@ if(!file.exists(zipfile)) {
 
 ```
 
-Before loading the required dataset, the **activity.zip**  file needs to be unzipped to extract the **activity.csv** file which can then be opened using the read.csv command. The following code performs these steps and then displays the first five (5) observations in the dataset.
+Before loading the required dataset, the **activity.zip**  file needs to be unzipped to extract
+the **activity.csv** file which can then be opened using the read.csv command. The following R 
+code performs these steps and then displays the first five (5) observations in the dataset.
 ```{r cache=TRUE}
-unzip(zipfile) ## unzip the source file to extract "activity.csv" datafile
+## unzip the source file to extract "activity.csv" datafile and load the data set
+unzip(zipfile) 
 datafile <- "activity.csv"
-projData <- read.csv(datafile, colClasses = c("numeric", "Date", "numeric")) ## load the project data
+projData <- read.csv(datafile, colClasses = c("numeric", "Date", "numeric")) 
 head (projData,5 ) ## display first 5 rows of the dataset
 
 ```
 
-The preprocessing requires include changing the *interval* variable to a factor variable and converting the date variable to a date variable using the following code.
+The preprocessing required includes changing the *interval* variable to a factor variable and
+converting the date variable to a date variable using the following R code.
 ```{r}
 ## change integer interval variable  to 4 digit factor, and date variable to a Date() variable
 projData$intervalFactor <-   factor(sprintf("%04d", projData$interval))
@@ -50,33 +61,35 @@ hist(projData$steps, col="blue", main = "Total Number of Steps",
 ```
 
      
-The following code computes the mean and median total number of steps taken each day;The calculated 
-values have been formatted for neatness in the output.
+The following R code computes the mean and median total number of steps taken each day; The 
+calculated values have been formatted for neatness in the output.
 ```{r}
+## Calaculate mean and median total number of steps
 meanTotalNumberofSteps <- sprintf("%.4f", mean(projData$steps, na.rm=TRUE)) 
 medianTotalNumberofSteps <- sprintf("%d", median(projData$steps, na.rm=TRUE))
 print ( c(meanTotalNumberofSteps, medianTotalNumberofSteps))
 ```
 
-The mean `r meanTotalNumberofSteps ` is and the median is `r medianTotalNumberofSteps `
+The mean number of steps taken by the individual in a 5-minute interval is `r meanTotalNumberofSteps ` is and the median is `r medianTotalNumberofSteps `
 
 ## What is the average daily activity pattern?
 
-The following coded plots and displays the averagae daily activity pattern
-```{r cache =TRUE}
+The following R code plots and displays the averagae daily activity pattern
+```{r warning=FALSE}
 library(ggplot2)
-## create data frame for intervals and averages for each interval
 library(plyr)
-avgpatternData <- ddply(projData, "intervalFactor", transform, average = mean(steps, na.rm=TRUE))
+## create data frame for intervals and averages for each interval
+avgpatternData <- ddply(projData, "intervalFactor", transform, 
+                                       average = mean(steps, na.rm=TRUE))
 
-## plot intervals against averages
+## plot interval against average number of steps taken in each interval
 plot(avgpatternData$interval, avgpatternData$average, type="l", 
      ylab = "Averge steps per day ", xlab="Interval", 
      main= "Average Daily Activity Pattern")
 
 ```
 
-The following finds and displays the 5-minute interval with the maximum number of steps.
+The following R code finds and displays the 5-minute interval with the maximum number of steps.
 ```{r}
 ## get interval with maximum number of steps, on average
 maxIntervalArray <- avgpatternData[(avgpatternData$average>= max(avgpatternData$average)),]
@@ -89,8 +102,7 @@ On average, the `r maxInterval `   time interval has the maximum number of steps
 
 ## Imputing missing values
 
-The following code calculates and displays the number of observations (rows) with at 
-least one missing value.
+The presence of missing rows may introduce bias into some computations.The following code calculates and displays the number of observations (rows) with at least one missing value.
 ```{r}
 numberofIncompleteRow <-  nrow(projData) - sum(complete.cases(projData))
 print(numberofIncompleteRow)
@@ -98,14 +110,18 @@ print(numberofIncompleteRow)
 
 The number of incomplete observations (rows) is `r numberofIncompleteRow`
 
-The presence of missing rows may introduce bias into some computations. In this assignment the missing rows in the steps variable (column)  are a potential source of bias. The strategy for dealing with missing vlaues was to replace a missing value (NA) in the steps column with the average median value for the time interval where that NA appears. The following codes performs this transformation, and displays the first first rows in the data set.
+In this assignment the missing rows in the steps variable (column) are a potential source of bias. 
+The strategy for dealing with these missing vlaues was to replace a missing value (NA) in the steps column with the average number of steps for the time interval where that NA appears. The following codes performs this transformation, and displays the first first rows in the data set.
 
-```{r}
+```{r warning=FALSE}
 ## Transform dataframe by replacing NAs in number of steps by average number of steps
 ## in the corresponding time interval 
 library(plyr)
-filledProjData <-  ddply(projData, .(intervalFactor), transform, intervalMedian = median(steps, na.rm=TRUE))
-filledProjData$steps <- with( filledProjData, ifelse( is.na(steps), intervalMedian , steps) )
+filledProjData <-  ddply(projData, .(intervalFactor), transform, 
+                                     intervalMean = mean(steps,  na.rm=TRUE))
+
+filledProjData$steps <- with( filledProjData, 
+                                  ifelse( is.na(steps), intervalMean , steps) )
 
 ## display first 5 rows
 head(filledProjData, 5)
@@ -114,24 +130,25 @@ head(filledProjData, 5)
 All NAs in the steps variable have been replaced accordingly. The following histograms displays the total number of steps taken in each 5-minute interval per day.
 ```{r}
 hist(filledProjData$steps, col="blue", main = "Total Number of Steps", 
-     xlab = "Total Number of Steps per day")
+                                        xlab = "Total Number of Steps per day")
 
 ```
 
 After the transformation, the mean and median total number of steps taken each day was computed. The calculated values have been formatted for neatness of the output.
 ```{r}
-rmeanTotalNumberofSteps <- sprintf("%.4f", mean(filledProjData$steps, na.rm=TRUE)) 
-rmedianTotalNumberofSteps <- sprintf("%d", median(filledProjData$steps, na.rm=TRUE))
-print(c (rmeanTotalNumberofSteps,rmedianTotalNumberofSteps) )
+revmeanTotalNumberofSteps <- sprintf("%.4f", mean(filledProjData$steps, na.rm=TRUE)) 
+revmedianTotalNumberofSteps <- sprintf("%d", median(filledProjData$steps, na.rm=TRUE))
+print(c (revmeanTotalNumberofSteps,revmedianTotalNumberofSteps) )
 ```
 
-The revised mean `r rmeanTotalNumberofSteps ` is and the median is `r rmedianTotalNumberofSteps `. We observe that after replacing the NAs in the steps variable, the mean has decreased from `r meanTotalNumberofSteps` to `r rmeanTotalNumberofSteps`
+The revised average number of steps per interval is `r revmeanTotalNumberofSteps ` is and the median is `r revmedianTotalNumberofSteps `. The chosen strategy has not changed the mean and the median.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-The following code generate a plot that compares the average number of steps per interval over normal wekdays, and the average over weekends.
+The following R code generates a plot that compares the average number of steps per interval over
+normal weekdays, and the average over weekends.
 
-```{r fig.width=12, fig.height=10}
+```{r fig.width=12, fig.height=10,warning=FALSE}
 
 dayTypepatternData <- filledProjData
 ## add day of the week variable, and day type variable
@@ -147,7 +164,6 @@ dayTypepatternData$daytype = with(dayTypepatternData, factor(daytype, levels = r
 ## claculate interval averages grouped by day type 
 dayTypepatternData <-  ddply(dayTypepatternData, .(intervalFactor,daytype), transform, average = median(steps, na.rm=TRUE))
 library(ggplot2)
-require(wrap)
 require(grid)
 g <- qplot( interval, average, data= dayTypepatternData, geom="line", ylab= "Average Number of Steps")+ facet_wrap(~daytype, ncol=1) 
  
@@ -156,3 +172,4 @@ print(g)
 
 ```
 
+The plot shows a pick at the 835 interval on both weekdays and weekends. However, there appears to be less movement/activity during working hours on weekdays, and more activity on weekends.
