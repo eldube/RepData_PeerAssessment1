@@ -1,6 +1,6 @@
 # Reproducible Research: Peer Assessment 1 
 
-*submitted: June 2014*
+*submitted: 14 June 2014*
 
 
 ## Data 
@@ -71,7 +71,13 @@ projData$date <- as.Date(projData$date, "%Y-%m-%d")
 The following histogram displays the total number of steps taken each day
 
 ```r
-hist(projData$steps, col = "blue", main = "Total Number of Steps", xlab = "Total Number of Steps per day")
+## calculate total number of steps per day
+library(plyr)
+dailyTotalData <- projData[complete.cases(projData$steps), ]  # remove NA values
+dailyTotals <- tapply(dailyTotalData$steps, dailyTotalData$date, mean, na.rm = TRUE)
+
+hist(dailyTotals, col = "blue", main = "Histogram of Total Number of Steps", 
+    xlab = "Total Number of Steps")
 ```
 
 ![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
@@ -83,17 +89,17 @@ calculated values have been formatted for neatness in the output.
 
 ```r
 ## Calaculate mean and median total number of steps
-meanTotalNumberofSteps <- sprintf("%.4f", mean(projData$steps, na.rm = TRUE))
-medianTotalNumberofSteps <- sprintf("%d", median(projData$steps, na.rm = TRUE))
+meanTotalNumberofSteps <- sprintf("%.4f", mean(dailyTotals, na.rm = TRUE))
+medianTotalNumberofSteps <- sprintf("%.4f", median(dailyTotals, na.rm = TRUE))
 print(c(meanTotalNumberofSteps, medianTotalNumberofSteps))
 ```
 
 ```
-## [1] "37.3826" "0"
+## [1] "37.3826" "37.3785"
 ```
 
 
-The mean number of steps taken by the individual in a 5-minute interval is 37.3826 is and the median is 0
+The mean number of steps per day taken by the individual in a 5-minute interval is 37.3826 is and the median is 37.3785
 
 ## What is the average daily activity pattern?
 
@@ -178,7 +184,12 @@ head(filledProjData, 5)
 All NAs in the steps variable have been replaced accordingly. The following histograms displays the total number of steps taken in each 5-minute interval per day.
 
 ```r
-hist(filledProjData$steps, col = "blue", main = "Total Number of Steps", xlab = "Total Number of Steps per day")
+
+revdailyTotals <- tapply(filledProjData$steps, filledProjData$date, mean, na.rm = TRUE)
+
+
+hist(revdailyTotals, col = "red", main = "Histogram of Total Number of Steps", 
+    xlab = "Total Number of Steps per day")
 ```
 
 ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
@@ -187,17 +198,17 @@ hist(filledProjData$steps, col = "blue", main = "Total Number of Steps", xlab = 
 After the transformation, the mean and median total number of steps taken each day was computed. The calculated values have been formatted for neatness of the output.
 
 ```r
-revmeanTotalNumberofSteps <- sprintf("%.4f", mean(filledProjData$steps, na.rm = TRUE))
-revmedianTotalNumberofSteps <- sprintf("%d", median(filledProjData$steps, na.rm = TRUE))
+revmeanTotalNumberofSteps <- sprintf("%.4f", mean(revdailyTotals, na.rm = TRUE))
+revmedianTotalNumberofSteps <- sprintf("%.4f", median(revdailyTotals, na.rm = TRUE))
 print(c(revmeanTotalNumberofSteps, revmedianTotalNumberofSteps))
 ```
 
 ```
-## [1] "37.3826" "0"
+## [1] "37.3826" "37.3826"
 ```
 
 
-The revised average number of steps per interval is 37.3826 is and the median is 0. The chosen strategy has not changed the mean and the median.
+The revised average number of steps per interval is 37.3826 is and the median is 37.3826. The chosen strategy has not changed the mean and the median has increased.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
